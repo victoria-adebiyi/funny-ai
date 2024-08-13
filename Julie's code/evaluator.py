@@ -6,6 +6,8 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score
 from scipy.stats import pearsonr, spearmanr
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Define the dataset class
 class JokesDataset(Dataset):
@@ -100,10 +102,10 @@ def evaluate_model(val_loader, model, criterion, device):
     pearson_corr, _ = pearsonr(all_targets, all_predictions)
     spearman_corr, _ = spearmanr(all_targets, all_predictions)
 
-    return avg_loss, avg_mae, r2, rmse, pearson_corr, spearman_corr
+    return avg_loss, avg_mae, r2, rmse, pearson_corr, spearman_corr, all_targets, all_predictions
 
 # Load the saved model
-model_path = 'joke_regressor2.pth'
+model_path = 'joke_regressor.pth'
 input_dim = 768
 model = ImprovedJokeRegressor(input_dim=input_dim)
 model.load_state_dict(torch.load(model_path))
@@ -126,8 +128,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 criterion = nn.MSELoss()
 
-# Calculate metrics
-avg_loss, avg_mae, r2, rmse, pearson_corr, spearman_corr = evaluate_model(test_loader, model, criterion, device)
+# Calculate metrics and get predictions
+avg_loss, avg_mae, r2, rmse, pearson_corr, spearman_corr, all_targets, all_predictions = evaluate_model(test_loader, model, criterion, device)
 
 # Print the results
 print(f'Validation Loss: {avg_loss:.4f}')
@@ -136,3 +138,31 @@ print(f'R² Score: {r2:.4f}')
 print(f'Root Mean Squared Error (RMSE): {rmse:.4f}')
 print(f'Pearson Correlation: {pearson_corr:.4f}')
 print(f'Spearman Correlation: {spearman_corr:.4f}')
+
+# Create and save visuals
+def create_and_save_visualizations(targets, predictions):
+    # Scatter plot of predictions vs. true scores
+    plt.figure(figsize=(14, 6))
+
+    # Subplot 1: Predictions vs. True Scores
+    plt.subplot(1, 2, 1)
+    plt.scatter(targets, predictions, alpha=0.5)
+    plt.plot([min(targets), max(targets)], [min(targets), max(targets)], 'r--', lw=2)
+    plt.xlabel('True Scores')
+    plt.ylabel('Predicted Scores')
+    plt.title('Predicted vs True Scores')
+
+    # Subplot 2: Error Distribution
+    errors = np.array(predictions) - np.array(targets)
+    plt.subplot(1, 2, 2)
+    sns.histplot(errors, kde=True)
+    plt.xlabel('Prediction Error')
+    plt.title('Error Distribution')
+
+    # Save the plots
+    plt.tight_layout()
+    plt.savefig('model_visualizations.png')
+    print('Visualizations saved as model_visualizations.png')
+
+# Generate and save the visualizations
+create_and_save_visualizations(all_targets, all_predictions)
