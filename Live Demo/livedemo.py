@@ -64,7 +64,7 @@ def main(joke_file, raw_reddit_score):
     # Load the trained joke regressor model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = ImprovedJokeRegressor(input_dim=INPUT_DIM)
-    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False))
+    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False, map_location=device))
     model.to(device)
     model.eval()
     
@@ -92,7 +92,7 @@ def sub(joke_file):
     # Load the trained joke regressor model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = ImprovedJokeRegressor(input_dim=INPUT_DIM)
-    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False))
+    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False, map_location=device))
     model.to(device)
     model.eval()
     

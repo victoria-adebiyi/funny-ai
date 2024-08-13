@@ -24,41 +24,54 @@ class JokesDataset(Dataset):
             'score': score
         }
 
+# Define the improved model class with 2D convolutional layers
 class ImprovedJokeRegressor(nn.Module):
     def __init__(self, input_dim):
         super(ImprovedJokeRegressor, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=256, kernel_size=5, stride=1, padding=2)
-        self.pool = nn.MaxPool1d(kernel_size=2, stride=2, padding=0)
-        self.conv2 = nn.Conv1d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=2)
-        self.fc1 = nn.Linear(128 * (input_dim // 2), 1024)  # Adjust dimensions based on pooling and conv layers
-        self.bn1 = nn.BatchNorm1d(1024)
+        # Convert the input to a shape suitable for 2D convolutions
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=(3, input_dim), padding=(1, 0))
+        self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(1024, 512)
-        self.bn2 = nn.BatchNorm1d(512)
+        self.pool = nn.MaxPool2d(kernel_size=(2, 1))
+
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 1))
+        self.bn2 = nn.BatchNorm2d(128)
+        
+        self.flatten = nn.Flatten()
+        # Calculate the size after flattening (depends on input size and pooling)
+        self.fc1 = nn.Linear(128 * ((input_dim - 2) // 2 - 1), 1024)
+        self.bn3 = nn.BatchNorm1d(1024)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(512, 256)
-        self.bn3 = nn.BatchNorm1d(256)
+        self.fc2 = nn.Linear(1024, 512)
+        self.bn4 = nn.BatchNorm1d(512)
         self.relu3 = nn.ReLU()
+        self.fc3 = nn.Linear(512, 256)
+        self.bn5 = nn.BatchNorm1d(256)
+        self.relu4 = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
         self.fc4 = nn.Linear(256, 1)
         self.initialize_weights()
 
     def forward(self, x):
-        x = x.transpose(1, 2)  # Change shape to (batch_size, input_dim, seq_length)
+        x = x.unsqueeze(1)  # Add channel dimension for Conv2D
         x = self.conv1(x)
-        x = self.pool(x)
-        x = self.conv2(x)
-        x = self.pool(x)
-        x = x.view(x.size(0), -1)  # Flatten the output from conv layers
-        x = self.fc1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.fc2(x)
+        x = self.pool(x)
+        x = self.conv2(x)
         x = self.bn2(x)
-        x = self.relu2(x)
-        x = self.fc3(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
         x = self.bn3(x)
+        x = self.relu2(x)
+        x = self.fc2(x)
+        x = self.bn4(x)
         x = self.relu3(x)
+        x = self.fc3(x)
+        x = self.bn5(x)
+        x = self.relu4(x)
         x = self.dropout(x)
         x = self.fc4(x)
         return x.squeeze()
@@ -69,8 +82,8 @@ class ImprovedJokeRegressor(nn.Module):
                 nn.init.xavier_uniform_(m.weight)
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
-            elif isinstance(m, nn.Conv1d):
-                nn.init.kaiming_uniform_(m.weight, nonlinearity='relu')
+            elif isinstance(m, nn.Conv2d):
+                nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
 
