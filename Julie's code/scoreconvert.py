@@ -18,11 +18,3 @@ def reddit_score_to_10_scale(score, max_score=136353):
         # Apply the logarithmic scaling
         scaled_score = np.log10(score + 1) / np.log10(max_score + 1) * 10
         return scaled_score
-
-# Example usage
-reddit_scores = [0, 10, 100, 1000, 50000, 136353]
-scaled_scores = [reddit_score_to_10_scale(score) for score in reddit_scores]
-
-print("Original Scores:", reddit_scores)
-print("Scaled Scores:", scaled_scores)
-print("Scaled score", reddit_score_to_10_scale(11014))
