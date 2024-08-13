@@ -1,7 +1,7 @@
 import torch
 import argparse
-from sentence_transformers import SentenceTransformer
 import torch.nn as nn
+from sentence_transformers import SentenceTransformer
 from jokerater import predict_joke_score
 from scoreconvert import reddit_score_to_10_scale
 import warnings
@@ -54,9 +54,9 @@ def load_joke_from_file(filename):
     with open(filename, 'r') as file:
         return file.read().strip()
 
-def main(raw_reddit_score):
-    # Load the joke from the text file
-    joke = load_joke_from_file('joke.txt')
+def main(joke_file, raw_reddit_score):
+    # Load the joke from the specified text file
+    joke = load_joke_from_file(joke_file)
     
     # Initialize SBERT model for encoding jokes
     sbert_model = SentenceTransformer('bert-base-nli-mean-tokens')
@@ -85,8 +85,9 @@ def main(raw_reddit_score):
 if __name__ == "__main__":
     # Set up argument parsing
     parser = argparse.ArgumentParser(description="Compare Reddit score with joke prediction.")
+    parser.add_argument('joke_file', type=str, help='The path to the file containing the joke.')
     parser.add_argument('raw_reddit_score', type=float, help='The raw Reddit score to be converted and compared.')
     
     args = parser.parse_args()
     
-    main(args.raw_reddit_score)
+    main(args.joke_file, args.raw_reddit_score)
