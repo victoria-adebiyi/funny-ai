@@ -82,12 +82,38 @@ def main(joke_file, raw_reddit_score):
     print(f"Scaled Reddit Score: {scaled_reddit_score:.2f}")
     print(f"Difference between the scores: {abs(score_difference):.2f}")
 
+def sub(joke_file):
+    # Load the joke from the specified text file
+    joke = load_joke_from_file(joke_file)
+    
+    # Initialize SBERT model for encoding jokes
+    sbert_model = SentenceTransformer('bert-base-nli-mean-tokens')
+    
+    # Load the trained joke regressor model
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = ImprovedJokeRegressor(input_dim=INPUT_DIM)
+    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False))
+    model.to(device)
+    model.eval()
+    
+    # Predict the joke score
+    predicted_score = predict_joke_score(joke, model, sbert_model, device)
+    
+    # Output the results
+    print(f"Predicted Joke Score: {predicted_score:.2f}")
+
 if __name__ == "__main__":
     # Set up argument parsing
     parser = argparse.ArgumentParser(description="Compare Reddit score with joke prediction.")
     parser.add_argument('joke_file', type=str, help='The path to the file containing the joke.')
-    parser.add_argument('raw_reddit_score', type=float, help='The raw Reddit score to be converted and compared.')
+    parser.add_argument('-s', '--score', type=float, help='The raw Reddit score to be converted and compared.', required=False)
     
     args = parser.parse_args()
+
+    if args.score is not None:
+        main(args.joke_file, args.score)
+    else:
+        sub(args.joke_file)
+
     
-    main(args.joke_file, args.raw_reddit_score)
+    
