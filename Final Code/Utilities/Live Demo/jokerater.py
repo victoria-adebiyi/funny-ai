@@ -1,4 +1,5 @@
-# AI Credit: Code written with assistance from ChatGPT. 
+# AI Credit: Code written with assistance from ChatGPT.
+# Scores jokes using a provided model. 
 import torch
 from sentence_transformers import SentenceTransformer
 
@@ -12,5 +13,4 @@ def predict_joke_score(joke, model, sbert_model, device):
     with torch.no_grad():
         score = model(embedding).item()
     
-    # Convert the score to an integer
     return score

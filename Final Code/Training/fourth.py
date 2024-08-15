@@ -1,4 +1,5 @@
 # AI Credit: Code written with assistance from ChatGPT. 
+# The fourth iteration of our neural network.
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -63,20 +64,6 @@ class ImprovedJokeRegressor(nn.Module):
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
 
-# Load and preprocess data
-def load_data(train_path, test_path):
-    # Read files with the correct delimiter
-    train_df = pd.read_csv(train_path, sep=';;;;;', engine='python', header=0, usecols=[0, 1], names=['score', 'joke'])
-    test_df = pd.read_csv(test_path, sep=';;;;;', engine='python', header=0, usecols=[0, 1], names=['score', 'joke'])
-    
-    # Extract jokes and scores
-    train_jokes = train_df['joke'].tolist()
-    train_scores = train_df['score'].tolist()
-    test_jokes = test_df['joke'].tolist()
-    test_scores = test_df['score'].tolist()
-
-    return train_jokes, train_scores, test_jokes, test_scores
-
 # Early stopping class
 class EarlyStopping:
     def __init__(self, patience=5, delta=0):
@@ -94,6 +81,20 @@ class EarlyStopping:
             self.counter += 1
             if self.counter >= self.patience:
                 self.early_stop = True
+
+# Load and preprocess data
+def load_data(train_path, test_path):
+    # Read files with the correct delimiter
+    train_df = pd.read_csv(train_path, sep=';;;;;', engine='python', header=0, usecols=[0, 1], names=['score', 'joke'])
+    test_df = pd.read_csv(test_path, sep=';;;;;', engine='python', header=0, usecols=[0, 1], names=['score', 'joke'])
+    
+    # Extract jokes and scores
+    train_jokes = train_df['joke'].tolist()
+    train_scores = train_df['score'].tolist()
+    test_jokes = test_df['joke'].tolist()
+    test_scores = test_df['score'].tolist()
+
+    return train_jokes, train_scores, test_jokes, test_scores
 
 # Main training function
 def train_model(train_loader, model, criterion, optimizer, device):

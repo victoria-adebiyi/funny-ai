@@ -1,4 +1,5 @@
 # AI Credit: Code written with assistance from ChatGPT. 
+# Demo application utilizing our model. Scores jokes and converts raw reddit scores to the logarithmic scale used in the dataset.
 import torch
 import argparse
 import torch.nn as nn
@@ -55,7 +56,7 @@ def load_joke_from_file(filename):
     with open(filename, 'r') as file:
         return file.read().strip()
 
-def main(joke_file, raw_reddit_score):
+def main(joke_file, raw_reddit_score=False):
     # Load the joke from the specified text file
     joke = load_joke_from_file(joke_file)
     
@@ -72,36 +73,17 @@ def main(joke_file, raw_reddit_score):
     # Predict the joke score
     predicted_score = predict_joke_score(joke, model, sbert_model, device)
     
-    # Convert raw Reddit score to a 0-10 scale
-    scaled_reddit_score = reddit_score_to_10_scale(raw_reddit_score)
-    
-    # Calculate the difference
-    score_difference = predicted_score - scaled_reddit_score
-    
     # Output the results
     print(f"Predicted Joke Score: {predicted_score:.2f}")
-    print(f"Scaled Reddit Score: {scaled_reddit_score:.2f}")
-    print(f"Difference between the scores: {abs(score_difference):.2f}")
 
-def sub(joke_file):
-    # Load the joke from the specified text file
-    joke = load_joke_from_file(joke_file)
-    
-    # Initialize SBERT model for encoding jokes
-    sbert_model = SentenceTransformer('bert-base-nli-mean-tokens')
-    
-    # Load the trained joke regressor model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = ImprovedJokeRegressor(input_dim=INPUT_DIM)
-    model.load_state_dict(torch.load(MODEL_PATH, weights_only=False, map_location=device))
-    model.to(device)
-    model.eval()
-    
-    # Predict the joke score
-    predicted_score = predict_joke_score(joke, model, sbert_model, device)
-    
-    # Output the results
-    print(f"Predicted Joke Score: {predicted_score:.2f}")
+    # Compare actual score to predicted score if actual score is provided
+    if raw_reddit_score is not False:
+        # Convert raw Reddit score to a 0-10 scale
+        scaled_reddit_score = reddit_score_to_10_scale(raw_reddit_score)
+        # Calculate the difference
+        score_difference = predicted_score - scaled_reddit_score
+        print(f"Scaled Reddit Score: {scaled_reddit_score:.2f}")
+        print(f"Difference between the scores: {abs(score_difference):.2f}")
 
 if __name__ == "__main__":
     # Set up argument parsing
@@ -114,7 +96,7 @@ if __name__ == "__main__":
     if args.score is not None:
         main(args.joke_file, args.score)
     else:
-        sub(args.joke_file)
+        main(args.joke_file)
 
     
     

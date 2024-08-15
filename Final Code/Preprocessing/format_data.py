@@ -1,4 +1,5 @@
 # AI Credit: Code written with assistance from ChatGPT. 
+# Process rJokesData into a format usable by our model
 files = ["train", "test"]
 
 for file in files:

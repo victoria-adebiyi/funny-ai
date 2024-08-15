@@ -1,4 +1,5 @@
 # AI Credit: Code written with assistance from ChatGPT. 
+# Converts raw reddit scores to the logarithmic scale used in the dataset
 import numpy as np
 
 def reddit_score_to_10_scale(score, max_score=136353):
